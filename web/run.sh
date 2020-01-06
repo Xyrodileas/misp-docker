@@ -141,10 +141,63 @@ echo "Configure MISP"
 # Configure MISP config
 CAKE="/var/www/MISP/app/Console/cake"
 
+# Server Settings & Maintenance
+#
 $CAKE Admin setSetting MISP.baseurl "$MISP_BASEURL" 2> /dev/null | true
-$CAKE Admin setSetting Plugin.ZeroMQ_port "$ZeroMQ_port" 2> /dev/null | true
+$CAKE Admin setSetting MISP.external_baseurl "$MISP_BASEURL" 2> /dev/null | true
+$CAKE Admin setSetting MISP.live true 2> /dev/null | true
+$CAKE Admin setSetting MISP.language "eng" 2> /dev/null | true
+$CAKE Admin setSetting MISP.email "$MISP_EMAIL" 2> /dev/null | true
+# Org 0 - None
+# Org 1 - ORGNAME
+# Org 2 does not exist on first install. The first org created by the user is assigned Org ID 2.
+$CAKE Admin setSetting MISP.host_org_id 2 2> /dev/null | true
+# MISP.default_event_distribution:
+# 1 == This Community Only
+# 2 == Connected Communities
+# 3 == All Commmunities
+$CAKE Admin setSetting MISP.default_event_distribution 1 2> /dev/null | true
+$CAKE Admin setSetting MISP.default_event_tag_collection 0 2> /dev/null | true
+$CAKE Admin setSetting MISP.proposals_block_attributes false 2> /dev/null | true
+$CAKE Admin setSetting MISP.redis_host "127.0.0.1" 2> /dev/null | true
+$CAKE Admin setSetting MISP.redis_port "6379" 2> /dev/null | true
+# We're not using a venv here.
+$CAKE Admin setSetting MISP.python_bin /usr/bin/python3
+$CAKE Admin setSetting MISP.ssdeep_correlation_threshold "40" 2> /dev/null | true
+$CAKE Admin setSetting MISP.org "$MISP_org" 2> /dev/null | true
+$CAKE Admin setSetting MISP.contact "$MISP_EMAIL" 2> /dev/null | true
+$CAKE Admin setSetting MISP.extended_alert_subject false 2> /dev/null | true
+# TODO: test param value is undefined
+#$CAKE Admin setSetting MISP.default_event_threat_level 4 2> /dev/null | true
+$CAKE Admin setSetting MISP.default_event_threat_level 4 2> /dev/null | true
+# Logging
+$CAKE Admin setSetting MISP.log_client_ip true 2> /dev/null | true
+$CAKE Admin setSetting MISP.log_auth true 2> /dev/null | true
+# We want delegation so ISAO members can be anonymous if they so chose.
+$CAKE Admin setSetting MISP.delegation true 2> /dev/null | true
+# TODO: test performance hit
+$CAKE Admin setSetting MISP.showCorrelationsOnIndex true 2> /dev/null | true
+$CAKE Admin setSetting MISP.showProposalsCountOnIndex true 2> /dev/null | true
+$CAKE Admin setSetting MISP.showSightingsCountOnIndex true 2> /dev/null | true
+$CAKE Admin setSetting MISP.showDiscussionsCountOnIndex true 2> /dev/null | true
+# Only org admins and admins should be editing user settings.
+$CAKE Admin setSetting MISP.disableUserSelfManagement true 2> /dev/null | true
+
+# Encryption Settings
+#
+$SUDO_WWW $CAKE Admin setSetting "GnuPG.onlyencrypted" true
+$SUDO_WWW $CAKE Admin setSetting "GnuPG.email" $MISP_ADMIN_EMAIL
+$SUDO_WWW $CAKE Admin setSetting "GnuPG.homedir" /var/www/MISP
+$SUDO_WWW $CAKE Admin setSetting "GnuPG.binary" /usr/bin/gpg
+$SUDO_WWW $CAKE Admin setSetting "GnuPG.password" $MISP_GPG_PASSWORD
+
+# Security Settings
+#
 $CAKE Admin setSetting Security.salt "$MISP_salt" 2> /dev/null | true
 
+# Plugin Settings
+#
+$CAKE Admin setSetting "Plugin.ZeroMQ_port" "$ZeroMQ_port" 2> /dev/null | true
 $CAKE Admin setSetting "Plugin.ZeroMQ_event_notifications_enable" true 2> /dev/null | true
 $CAKE Admin setSetting "Plugin.ZeroMQ_object_notifications_enable" true 2> /dev/null | true
 $CAKE Admin setSetting "Plugin.ZeroMQ_object_reference_notifications_enable" true 2> /dev/null | true
@@ -159,11 +212,8 @@ $CAKE Admin setSetting "Plugin.ZeroMQ_redis_namespace" "mispq" 2> /dev/null | tr
 $CAKE Admin setSetting "Plugin.ZeroMQ_include_attachments" false 2> /dev/null | true
 $CAKE Admin setSetting "Plugin.ZeroMQ_tag_notifications_enable" false 2> /dev/null | true
 $CAKE Admin setSetting "Plugin.ZeroMQ_audit_notifications_enable" false 2> /dev/null | true
-
 #Enabling zmq prior launching misp will fail and cannot recover..
 $CAKE Admin setSetting Plugin.ZeroMQ_enable false | true
-
-$CAKE Admin setSetting MISP.python_bin /usr/bin/python3
 
 # Enable Enrichment, set better timeouts
 $SUDO_WWW $CAKE Admin setSetting "Plugin.Enrichment_services_enable" true
@@ -206,12 +256,15 @@ $SUDO_WWW $CAKE Admin setSetting "Plugin.Export_timeout" 300
 $SUDO_WWW $CAKE Admin setSetting "Plugin.Export_pdfexport_enabled" true
 $SUDO_WWW $CAKE Admin setSetting "Plugin.Enrichment_services_enable" true
 
-# Config for GPG
-$SUDO_WWW $CAKE Admin setSetting "GnuPG.email" $MISP_ADMIN_EMAIL
-$SUDO_WWW $CAKE Admin setSetting "GnuPG.homedir" /var/www/MISP
-$SUDO_WWW $CAKE Admin setSetting "GnuPG.binary" /usr/bin/gpg
-$SUDO_WWW $CAKE Admin setSetting "GnuPG.email" $MISP_ADMIN_EMAIL
-$SUDO_WWW $CAKE Admin setSetting "GnuPG.password" $PASSPHRASE_GPG
+# TODO: Sightings
+#$SUDO_WWW $CAKE Admin setSetting "Plugin.Sightings_policy" 2
+#$SUDO_WWW $CAKE Admin setSetting "Plugin.Sightings_sighting_db_enable" 1
+
+# Import Service
+$SUDO_WWW $CAKE Admin setSetting "Plugin.Import_services_enable" true
+
+# Export Service
+$SUDO_WWW $CAKE Admin setSetting "Plugin.Export_services_enable" true
 
 sed -i "s,'host_org_id' => 1,'host_org_id' => 2," /var/www/MISP/app/Config/config.php
 
