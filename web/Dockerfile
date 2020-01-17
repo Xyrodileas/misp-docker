@@ -15,9 +15,22 @@ MAINTAINER Xavier Mertens <xavier@rootshell.be>
 # Install core components
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get dist-upgrade -y && apt-get autoremove -y && apt-get clean
-RUN apt-get install -y software-properties-common
+RUN apt-get install -y etckeeper
+#RUN apt-get install -y software-properties-common
 RUN apt-get install -y postfix
-RUN apt-get install -y mysql-client curl gcc git gnupg-agent make python openssl redis-server sudo vim zip locales
+RUN apt-get install curl gcc git gnupg-agent make openssl redis-server neovim zip libyara-dev -y
+RUN apt-get install python3-setuptools python3-dev python3-pip python3-redis python3-zmq virtualenv -y
+RUN apt-get install mariadb-client -y
+RUN apt-get install mariadb-server -y
+RUN apt-get install apache2 apache2-doc apache2-utils -y
+RUN apt-get install libapache2-mod-php7.3 php7.3 php7.3-cli php7.3-mbstring php7.3-dev php7.3-json php7.3-xml -y
+RUN apt-get install php7.3-mysql php7.3-opcache php7.3-readline php-redis php-gnupg php-gd -y
+RUN apt-get install libpq5 libjpeg-dev libfuzzy-dev ruby asciidoctor -y
+RUN apt-get install jq ntp ntpdate jupyter-notebook imagemagick tesseract-ocr -y
+RUN apt-get install libxml2-dev libxslt1-dev zlib1g-dev -y
+RUN apt-get install haveged -qqy
+
+RUN service haveged start
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -28,9 +41,6 @@ RUN apt-get install -y apache2 apache2-doc apache2-utils
 RUN a2dismod status
 RUN a2dissite 000-default
 
-# PHP 7.2
-RUN apt-get install -y libapache2-mod-php php7.2 php7.2-cli php7.2-dev php7.2-json php7.2-mysql php7.2-opcache php7.2-readline php7.2-redis php7.2-xml php7.2-mbstring php-mbstring
-RUN apt-get install -y php-pear pkg-config libbson-1.0 libmongoc-1.0-0 php-xml php-dev php-gd
 # install MySQL PDO extension
 RUN apt-get install -y php-mysql
 
